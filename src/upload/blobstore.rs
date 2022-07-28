@@ -64,7 +64,7 @@ const BLOB_MIN_BLOCK_SIZE: usize = ONE_MB * 5;
 const MAX_CONCURRENCY: usize = 10;
 
 // if we're uploading *huge* files, use 100MB chunks
-const REASONABLE_BLOCK_SIZE: usize = ONE_MB * 100;
+const REASONABLE_BLOCK_SIZE: usize = 10;
 
 pub struct UploadBlock {
     id: Bytes,
