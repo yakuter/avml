@@ -47,7 +47,7 @@ pub enum Error {
 type Result<T> = std::result::Result<T, Error>;
 
 // https://docs.microsoft.com/en-us/azure/storage/blobs/scalability-targets#scale-targets-for-blob-storage
-const BLOB_MAX_BLOCKS: usize = 50_000;
+const BLOB_MAX_BLOCKS: usize = 50;
 const BLOB_MAX_BLOCK_SIZE: usize = 10;
 const BLOB_MAX_FILE_SIZE: usize = BLOB_MAX_BLOCKS * BLOB_MAX_BLOCK_SIZE;
 
