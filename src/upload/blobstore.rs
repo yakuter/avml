@@ -48,7 +48,7 @@ type Result<T> = std::result::Result<T, Error>;
 
 // https://docs.microsoft.com/en-us/azure/storage/blobs/scalability-targets#scale-targets-for-blob-storage
 const BLOB_MAX_BLOCKS: usize = 50_000;
-const BLOB_MAX_BLOCK_SIZE: usize = ONE_MB * 4000;
+const BLOB_MAX_BLOCK_SIZE: usize = 10;
 const BLOB_MAX_FILE_SIZE: usize = BLOB_MAX_BLOCKS * BLOB_MAX_BLOCK_SIZE;
 
 // trigger's the "high-throughput block blobs" on all storage accounts
@@ -140,28 +140,28 @@ fn calc_concurrency(
         }
     }
 
-    let block_size = match block_size {
-        // if the user specifies a block size of 0 or doesn't specify a block size,
-        // calculate the block size based on the file size
-        Some(0) | None => {
-            match file_size {
-                // if the file is small enough to fit with 5MB blocks, use that
-                // to reduce impact for failure retries and increase
-                // concurrency.
-                Some(x) if (x < BLOB_MIN_BLOCK_SIZE * BLOB_MAX_BLOCKS) => BLOB_MIN_BLOCK_SIZE,
-                // if the file is large enough that we can fit with 100MB blocks, use that.
-                Some(x) if (x < REASONABLE_BLOCK_SIZE * BLOB_MAX_BLOCKS) => REASONABLE_BLOCK_SIZE,
-                // otherwise, just use the smallest block size that will fit
-                // within MAX BLOCKS to reduce memory pressure
-                Some(x) => (x / BLOB_MAX_BLOCKS) + 1,
-                None => REASONABLE_BLOCK_SIZE,
-            }
-        }
-        // minimum required to hit high-throughput block blob performance thresholds
-        Some(x) if (x <= BLOB_MIN_BLOCK_SIZE) => BLOB_MIN_BLOCK_SIZE,
-        // otherwise use the user specified value
-        Some(x) => x,
-    };
+    // let block_size = match block_size {
+    //     // if the user specifies a block size of 0 or doesn't specify a block size,
+    //     // calculate the block size based on the file size
+    //     Some(0) | None => {
+    //         match file_size {
+    //             // if the file is small enough to fit with 5MB blocks, use that
+    //             // to reduce impact for failure retries and increase
+    //             // concurrency.
+    //             Some(x) if (x < BLOB_MIN_BLOCK_SIZE * BLOB_MAX_BLOCKS) => BLOB_MIN_BLOCK_SIZE,
+    //             // if the file is large enough that we can fit with 100MB blocks, use that.
+    //             Some(x) if (x < REASONABLE_BLOCK_SIZE * BLOB_MAX_BLOCKS) => REASONABLE_BLOCK_SIZE,
+    //             // otherwise, just use the smallest block size that will fit
+    //             // within MAX BLOCKS to reduce memory pressure
+    //             Some(x) => (x / BLOB_MAX_BLOCKS) + 1,
+    //             None => REASONABLE_BLOCK_SIZE,
+    //         }
+    //     }
+    //     // minimum required to hit high-throughput block blob performance thresholds
+    //     Some(x) if (x <= BLOB_MIN_BLOCK_SIZE) => BLOB_MIN_BLOCK_SIZE,
+    //     // otherwise use the user specified value
+    //     Some(x) => x,
+    // };
 
     // if the block size is larger than the max block size, use the max block size
     let block_size = usize::min(block_size, BLOB_MAX_BLOCK_SIZE);
